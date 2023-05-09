@@ -64,8 +64,25 @@ int main() {
     return 0;
 }
 
-int mirror(struct node *root) {
+int isMirror(struct node *root1, struct node *root2) {
+    if(root1 == NULL && root2 == NULL) {
+        return 1;
+    }
+    if(root1 && root2 && root1->val == root2->val) {
+        int a = isMirror(root1->left, root2->right);
+        int b = isMirror(root1->right, root2->left);
+        if(a == 1 &&  b == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
     return 0;
+}
+
+int mirror(struct node *root) {
+    // Return 1 if the tree rooted at root is symmetric return 0 otherwise
+    return isMirror(root, root);
 }
 
 struct node *create_node(int val) {
