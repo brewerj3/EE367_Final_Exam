@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define INFINITE 32767
+
 int **create_int_matrix(int num_rows, int num_cols);
 
 void delete_int_matrix(int **matrix, int num_rows, int num_cols);
@@ -34,7 +36,30 @@ int main() {
 }
 
 int change(int coins[], int coin_size, int amount) {
-    return -1;
+    // Return the fewest number of coins needed to make the amount
+    // coin_size the number of coins in the coins array
+    if(amount == 0) {
+        return 0;
+    }
+    int table[amount + 1];
+    table[0] = 0;
+    for(int i = 1; i <= amount; i++) {
+        table[i] = INFINITE;
+    }
+    for(int i = 1; i <= amount; i++) {
+        for(int j = 0; j < coin_size; j++) {
+            if(coins[j] <= i) {
+                int sub = table[i - coins[j]];
+                if(sub != INFINITE && sub + 1 < table[i]) {
+                    table[i] = sub + 1;
+                }
+            }
+        }
+    }
+    if(table[amount] == INFINITE) {
+        return -1;
+    }
+    return table[amount];
 }
 
 void display(int coins[], int coin_size, int amount) {
