@@ -74,13 +74,13 @@ struct graph *create_graph1();
 
 void heapify(struct Heap *minheap, int index);
 
-struct Heap *minHeap(struct algm_data *a);
+struct Heap *createHeap(struct algm_data *a);
 
 void heapInsert(struct Heap *heap, int data);
 
 void heapInsertHelper(struct Heap *h, int index);
 
-int extractMin(struct Heap *h);
+int getMin(struct Heap *pq, struct algm_data *a);
 
 void deleteHeap(struct Heap *h);
 
@@ -158,7 +158,7 @@ void heapify(struct Heap *minheap, int index) {
     }
 }
 
-struct Heap *minHeap(struct algm_data *a) {
+struct Heap *createHeap(struct algm_data *a) {
     struct Heap *minHeap = (struct Heap *) malloc(sizeof(struct Heap));
 
     minHeap->size = 0;
@@ -201,16 +201,23 @@ void heapInsertHelper(struct Heap *h, int index) {
     }
 }
 
-int extractMin(struct Heap *h) {
-    int delete;
-    if(h->size == 0) {
-        return 0;
+int getMin(struct Heap *pq, struct algm_data *a) {
+    if(pq->size <= 0) {
+        return -1;
     }
-    delete = h->arr[0];
-    h->arr[0] = h->arr[h->size - 1];
-    h->size--;
-    heapify(h, 0);
-    return delete;
+
+    int min_node = pq->arr[0];;
+    int min_dist = a->node[pq->arr[0]].dist;
+    for(int i = 0; i < pq->size; i++) {
+        if(a->node[pq->arr[i]].dist < min_dist) {
+            min_dist = a->node[pq->arr[i]].dist;
+            min_node = pq->arr[i];
+        }
+    }
+    pq->arr[0] = pq->arr[pq->size - 1];
+    pq->size--;
+    heapify(pq, 0);
+    return min_node;
 }
 
 struct priorityq *priorityq_create(struct algm_data *a) {
@@ -319,8 +326,10 @@ void graph_display(struct graph *g) {
 struct algm_data *dijkstra(struct graph *g, int source) {
     struct algm_data *a = algm_data_create(g, source);
     struct priorityq *pq = priorityq_create(a);
+    //struct Heap *pq = createHeap(a);
 
     while (priorityq_not_empty(pq)) {
+        //while (pq->size > 0) {
         int new_node = priorityq_get(pq, a);
         for (struct adjlist_node *p = g->adjlist[new_node]; p != NULL; p = p->next) {
             if (priorityq_in_q(pq, p->node_id) == 1) {
