@@ -69,10 +69,10 @@ struct node *rotate_left(struct node *head, int k) {
     }
 
     int count = 0;
-    for(struct node *p = head; p != NULL; p = p->next) {
+    for (struct node *p = head; p != NULL; p = p->next) {
         count++;
     }
-    if(k > count) {
+    if (k > count) {
         count = k % count;
         k = count;
     }
@@ -80,8 +80,8 @@ struct node *rotate_left(struct node *head, int k) {
     struct node *kNode = head;
     struct node *lastNode = head;
     int i = 1;
-    for(struct node *p = head; p != NULL; p = p->next) {
-        if(i == k) {
+    for (struct node *p = head; p != NULL; p = p->next) {
+        if (i == k) {
             kNode = p;
         }
         lastNode = p;
