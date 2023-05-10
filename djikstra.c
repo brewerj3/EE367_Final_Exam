@@ -31,6 +31,12 @@ struct priorityq {
     int *in_q;
 };
 
+struct Heap {
+    int *arr;
+    int size;
+    int capacity;
+};
+
 /* Dijkstra's algorithm and managing its data structures */
 struct algm_data *algm_data_create(struct graph *g, int source);
 
@@ -65,6 +71,16 @@ void graph_display(struct graph *g);
 struct graph *create_graph0();
 
 struct graph *create_graph1();
+
+void heapify(struct Heap *minheap, int index);
+
+struct Heap *minHeap(struct algm_data *a);
+
+void heapInsert(struct Heap *heap, int data);
+
+void heapInsertHelper(struct Heap *h, int index);
+
+int extractMin(struct Heap *h);
 
 int main() {
     printf("Graph 0:\n");
@@ -114,6 +130,80 @@ struct algm_data *algm_data_create(struct graph *g, int source) {
 void algm_data_destroy(struct algm_data *a) {
     free(a->node);
     free(a);
+}
+
+void heapify(struct Heap *minheap, int index) {
+    int left = index * 2 + 1;
+    int right = index * 2 + 2;
+    int min = index;
+    if(left >= minheap->size || left < 0) {
+        left = -1;
+    }
+    if(right >=  minheap->size || right < 0) {
+        min = -1;
+    }
+    if(left != -1 && minheap->arr[left] < minheap->arr[index]) {
+        min = left;
+    }
+    if(right != -1 && minheap->arr[right] < minheap->arr[index]) {
+        min = right;
+    }
+    if(min != index) {
+        int temp = minheap->arr[min];
+        minheap->arr[min] = minheap->arr[index];
+        minheap->arr[index] = temp;
+        heapify(minheap, min);
+    }
+}
+
+struct Heap *minHeap(struct algm_data *a) {
+    struct Heap *minHeap = (struct Heap *) malloc(sizeof(struct Heap));
+
+    minHeap->size = 0;
+    minHeap->capacity = a->num_nodes;
+    minHeap->arr = (int *) malloc(a->num_nodes * sizeof (int));
+
+    int i;
+    for (i = 0; i < a->num_nodes; i++) {
+        minHeap->arr[i] = a->node[i].dist;
+    }
+    minHeap->size = 1;
+    i = (minHeap->size -2) /2;
+    while(i >= 0) {
+        heapify(minHeap, i);
+        i--;
+    }
+    return minHeap;
+}
+
+void heapInsert(struct Heap *h, int data) {
+    if(h->size < h->capacity) {
+        h->arr[h->size] = data;
+        heapInsertHelper(h, h->size);
+        h->size++;
+    }
+}
+
+void heapInsertHelper(struct Heap *h, int index) {
+    int parent = (index - 1) / 2;
+    if(h->arr[parent] > h->arr[index]) {
+        int temp = h->arr[parent];
+        h->arr[parent] = h->arr[index];
+        h->arr[index] = temp;
+        heapInsertHelper(h, parent);
+    }
+}
+
+int extractMin(struct Heap *h) {
+    int delete;
+    if(h->size == 0) {
+        return 0;
+    }
+    delete = h->arr[0];
+    h->arr[0] = h->arr[h->size - 1];
+    h->size--;
+    heapify(h, 0);
+    return delete;
 }
 
 struct priorityq *priorityq_create(struct algm_data *a) {
