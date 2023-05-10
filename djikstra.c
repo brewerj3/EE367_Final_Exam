@@ -138,19 +138,19 @@ void heapify(struct Heap *minheap, int index) {
     int left = index * 2 + 1;
     int right = index * 2 + 2;
     int min = index;
-    if (left >= minheap->size || left < 0) {
+    if(left >= minheap->size || left < 0) {
         left = -1;
     }
-    if (right >= minheap->size || right < 0) {
+    if(right >=  minheap->size || right < 0) {
         min = -1;
     }
-    if (left != -1 && minheap->arr[left] < minheap->arr[index]) {
+    if(left != -1 && minheap->arr[left] < minheap->arr[index]) {
         min = left;
     }
-    if (right != -1 && minheap->arr[right] < minheap->arr[index]) {
+    if(right != -1 && minheap->arr[right] < minheap->arr[index]) {
         min = right;
     }
-    if (min != index) {
+    if(min != index) {
         int temp = minheap->arr[min];
         minheap->arr[min] = minheap->arr[index];
         minheap->arr[index] = temp;
@@ -163,15 +163,15 @@ struct Heap *minHeap(struct algm_data *a) {
 
     minHeap->size = 0;
     minHeap->capacity = a->num_nodes;
-    minHeap->arr = (int *) malloc(a->num_nodes * sizeof(int));
+    minHeap->arr = (int *) malloc(a->num_nodes * sizeof (int));
 
     int i;
     for (i = 0; i < a->num_nodes; i++) {
         minHeap->arr[i] = a->node[i].dist;
     }
     minHeap->size = 1;
-    i = (minHeap->size - 2) / 2;
-    while (i >= 0) {
+    i = (minHeap->size -2) /2;
+    while(i >= 0) {
         heapify(minHeap, i);
         i--;
     }
@@ -184,7 +184,7 @@ void deleteHeap(struct Heap *h) {
 }
 
 void heapInsert(struct Heap *h, int data) {
-    if (h->size < h->capacity) {
+    if(h->size < h->capacity) {
         h->arr[h->size] = data;
         heapInsertHelper(h, h->size);
         h->size++;
@@ -193,7 +193,7 @@ void heapInsert(struct Heap *h, int data) {
 
 void heapInsertHelper(struct Heap *h, int index) {
     int parent = (index - 1) / 2;
-    if (h->arr[parent] > h->arr[index]) {
+    if(h->arr[parent] > h->arr[index]) {
         int temp = h->arr[parent];
         h->arr[parent] = h->arr[index];
         h->arr[index] = temp;
@@ -203,7 +203,7 @@ void heapInsertHelper(struct Heap *h, int index) {
 
 int extractMin(struct Heap *h) {
     int delete;
-    if (h->size == 0) {
+    if(h->size == 0) {
         return 0;
     }
     delete = h->arr[0];
@@ -318,22 +318,22 @@ void graph_display(struct graph *g) {
 
 struct algm_data *dijkstra(struct graph *g, int source) {
     struct algm_data *a = algm_data_create(g, source);
-    struct Heap *pq = minHeap(a);
+    struct priorityq *pq = priorityq_create(a);
 
-    while (pq->size != 0) {
-        int new_node = extractMin(pq);
+    while (priorityq_not_empty(pq)) {
+        int new_node = priorityq_get(pq, a);
         for (struct adjlist_node *p = g->adjlist[new_node]; p != NULL; p = p->next) {
-            //if (priorityq_in_q(pq, p->node_id) == 1) {
-            if (a->node[p->node_id].dist > a->node[new_node].dist + p->weight) {
-                a->node[p->node_id].dist = a->node[new_node].dist + p->weight;
-                a->node[p->node_id].pred = new_node;
-                heapInsert(pq, p->node_id);
+            if (priorityq_in_q(pq, p->node_id) == 1) {
+                if (a->node[p->node_id].dist > a->node[new_node].dist + p->weight) {
+                    a->node[p->node_id].dist = a->node[new_node].dist + p->weight;
+                    a->node[p->node_id].pred = new_node;
+                    priorityq_update(pq, a, p->node_id);
+                }
             }
-            //}
         }
     }
 
-    deleteHeap(pq);
+    priorityq_destroy(pq);
     return a;
 }
 
