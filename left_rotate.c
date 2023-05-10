@@ -63,7 +63,34 @@ void display_list(struct node *head) {
     printf("\n");
 }
 
-struct node *rotate_left(struct node *head, int amount) {
+struct node *rotate_left(struct node *head, int k) {
+    if (k == 0) {
+        return head; // if k == 0 there is no rotation
+    }
+
+    int count = 0;
+    for(struct node *p = head; p != NULL; p = p->next) {
+        count++;
+    }
+    if(k > count) {
+        count = k % count;
+        k = count;
+    }
+
+    struct node *kNode = head;
+    struct node *lastNode = head;
+    int i = 1;
+    for(struct node *p = head; p != NULL; p = p->next) {
+        if(i == k) {
+            kNode = p;
+        }
+        lastNode = p;
+        i++;
+    }
+    lastNode->next = head;
+    head = kNode->next;
+    kNode->next = NULL;
+
     return head;
 }
 
