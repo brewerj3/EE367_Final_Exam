@@ -82,7 +82,7 @@ struct Heap *heap_create(struct algm_data *a);
 
 void heapInsert(struct Heap *heap, struct algm_data *a, int data);
 
-void heapInsertHelper(struct Heap *h, int index);
+void heapUpdater(struct Heap *h, int index);
 
 int heap_get(struct Heap *pq, struct algm_data *a);
 
@@ -218,14 +218,14 @@ void heap_destroy(struct Heap *h) {
     free(h);
 }
 
-void heapInsertHelper(struct Heap *h, int index) {
+void heapUpdater(struct Heap *h, int index) {
     int parent = (index - 1) / 2;
 
     if (h->arr[parent] > h->arr[index]) {
         int temp = h->arr[parent];
         h->arr[parent] = h->arr[index];
         h->arr[index] = temp;
-        heapInsertHelper(h, parent);
+        heapUpdater(h, parent);
     }
 }
 
