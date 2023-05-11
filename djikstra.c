@@ -4,8 +4,8 @@
 #define INFINITY 10000
 #define NO_PRED -1
 
-//#define TEST
-//#define HEAPIFY
+#define TEST
+//#define DEBUG
 
 struct adjlist_node { // Node in the adjacency list
     int node_id;
@@ -76,7 +76,7 @@ struct graph *create_graph0();
 
 struct graph *create_graph1();
 
-void heapify(struct Heap *minheap, int index);
+void heapify(struct Heap *minheap, int index, struct algm_data *a);
 
 struct Heap *heap_create(struct algm_data *a);
 
@@ -87,6 +87,12 @@ void heapInsertHelper(struct Heap *h, int index);
 int heap_get(struct Heap *pq, struct algm_data *a);
 
 void heap_destroy(struct Heap *h);
+
+int in_heap(struct Heap *pq, int node);
+
+void heap_update(struct Heap *pq, int node, struct algm_data *a);
+
+void printHeap(struct Heap *pq, struct algm_data *a);
 
 int main() {
     printf("Graph 0:\n");
@@ -138,47 +144,72 @@ void algm_data_destroy(struct algm_data *a) {
     free(a);
 }
 
-void heapify(struct Heap *minheap, int index) {
+void heapify(struct Heap *minheap, int index, struct algm_data *a) {
     int left = index * 2 + 1;
     int right = index * 2 + 2;
     int min = index;
+#ifdef DEBUG
+    //printf("left  = %i\n", left);
+    //printf("right = %i\n", right);
+    //printf("index = %i\n", index);
+#endif
     if (left >= minheap->size || left < 0) {
         left = -1;
     }
     if (right >= minheap->size || right < 0) {
-        min = -1;
+        right = -1;
     }
-    if (left != -1 && minheap->arr[left] < minheap->arr[index]) {
+    if (left != -1 && a->node[minheap->arr[left]].dist < a->node[minheap->arr[index]].dist) {
         min = left;
     }
-    if (right != -1 && minheap->arr[right] < minheap->arr[index]) {
+    if (right != -1 && a->node[minheap->arr[right]].dist < a->node[minheap->arr[index]].dist) {
         min = right;
     }
     if (min != index) {
         int temp = minheap->arr[min];
         minheap->arr[min] = minheap->arr[index];
         minheap->arr[index] = temp;
-        heapify(minheap, min);
+        heapify(minheap, min, a);
     }
 }
 
 struct Heap *heap_create(struct algm_data *a) {
     struct Heap *minHeap = (struct Heap *) malloc(sizeof(struct Heap));
-
+#ifdef DEBUG
+    //printf("allocated memory for minHeap\n");
+#endif
     minHeap->size = 0;
     minHeap->capacity = a->num_nodes;
+#ifdef DEBUG
+    //printf("will now allocate memory for arr\n");
+    //printf("a->num_nodes = %i\n", a->num_nodes);
+#endif
     minHeap->arr = (int *) malloc(a->num_nodes * sizeof(int));
-
+#ifdef DEBUG
+    //printf("arr allocated\n");
+#endif
     int i;
     for (i = 0; i < a->num_nodes; i++) {
-        minHeap->arr[i] = a->node[i].dist;
+#ifdef DEBUG
+        //printf("minHeap->arr[%i] = %i\n", i, i);
+#endif
+        minHeap->arr[i] = i;
     }
-    minHeap->size = 1;
+#ifdef DEBUG
+    //printf("minHeap->size = %i\n", i);
+#endif
+    minHeap->size = i;
     i = (minHeap->size - 2) / 2;
+#ifdef DEBUG
+    //printf("starting while loop\n");
+#endif
     while (i >= 0) {
-        heapify(minHeap, i);
+        heapify(minHeap, i, a);
         i--;
     }
+#ifdef DEBUG
+    //printf("returning minHeap\n");
+#endif
     return minHeap;
 }
 
@@ -187,16 +218,9 @@ void heap_destroy(struct Heap *h) {
     free(h);
 }
 
-void heapInsert(struct Heap *h, struct algm_data *a, int data) {
-    if (h->size < h->capacity) {
-        h->arr[h->size] = data;
-        heapInsertHelper(h, h->size);
-        h->size++;
-    }
-}
-
 void heapInsertHelper(struct Heap *h, int index) {
     int parent = (index - 1) / 2;
+
     if (h->arr[parent] > h->arr[index]) {
         int temp = h->arr[parent];
         h->arr[parent] = h->arr[index];
@@ -220,12 +244,52 @@ int heap_get(struct Heap *pq, struct algm_data *a) {
     }
     pq->arr[0] = pq->arr[pq->size - 1];
     pq->size--;
-    heapify(pq, 0);
+    heapify(pq, 0, a);
     return min_node;
 }
 
+int in_heap(struct Heap *pq, int node) {
+    // Return 1 if the node is in the heap, 0 otherwise
+    for(int i = 0; i < pq->size; i++) {
+        if(node == pq->arr[i]) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void printHeap(struct Heap *pq, struct algm_data *a) {
+    if(pq->size <= 0) {
+        printf("empty heap\n");
+        return;
+    }
+    printf("printing Heap\n");
+    for(int i = 0; i < pq->size; i++) {
+        //printf(" [%d] = %d ", i, pq->arr[i]);
+        printf("%d ", a->node[pq->arr[i]].dist);
+    }
+    printf("\n");
+}
+
+void heap_update(struct Heap *pq, int node, struct algm_data *a) {
+#ifdef DEBUG
+    printf("heap_update node %i\n",node);
+#endif
+    if(pq->size <= 0) {
+        return;
+    }
+    for(int i = pq->size; i >= 0; i--) {
+        heapify(pq, i, a);
+    }
+    for(int i = 0; i <= pq->size; i++) {
+        heapify(pq, i, a);
+    }
+    for(int i = pq->size; i >= 0; i--) {
+        heapify(pq, i, a);
+    }
+}
+
 struct priorityq *priorityq_create(struct algm_data *a) {
-#ifndef HEAPIFY
     struct priorityq *pq = (struct priorityq *) malloc(sizeof(struct priorityq));
 
     pq->node = (int *) malloc(sizeof(int) * a->num_nodes);
@@ -239,12 +303,7 @@ struct priorityq *priorityq_create(struct algm_data *a) {
     }
 
     return pq;
-#endif
-#ifdef HEAPIFY
-    struct Heap *pq = (struct Heap *) malloc(sizeof(struct Heap));
 
-
-#endif
 }
 
 void priorityq_destroy(struct priorityq *pq) {
@@ -339,15 +398,17 @@ struct algm_data *dijkstra(struct graph *g, int source) {
 #ifndef TEST
     struct priorityq *pq = priorityq_create(a);
 
-
     while (priorityq_not_empty(pq)) {
         int new_node = priorityq_get(pq, a);
         for (struct adjlist_node *p = g->adjlist[new_node]; p != NULL; p = p->next) {
             if (priorityq_in_q(pq, p->node_id) == 1) {                          // should not need a for loop to check if the node is in queue
+#ifdef DEBUG
+                printf("new_node = %i\n", new_node);
+#endif
                 if (a->node[p->node_id].dist > a->node[new_node].dist + p->weight) {
                     a->node[p->node_id].dist = a->node[new_node].dist + p->weight;
                     a->node[p->node_id].pred = new_node;
-                    priorityq_update(pq, a, p->node_id);
+                    priorityq_update(pq, a, p->node_id);    // Does not do anything
                 }
             }
         }
@@ -358,18 +419,37 @@ struct algm_data *dijkstra(struct graph *g, int source) {
 #endif
 #ifdef TEST
     struct Heap *pq = heap_create(a);
+#ifdef DEBUG
+    //printHeap(pq);
+#endif
     while (pq->size > 0) {
+#ifdef DEBUG
+        printf("\n");
+        printHeap(pq, a);
+#endif
         int new_node = heap_get(pq, a);
+
+#ifdef DEBUG
+        printf("heap_get returned %i\n",new_node);
+        printHeap(pq, a);
+        printf("\n");
+#endif
         for (struct adjlist_node *p = g->adjlist[new_node]; p != NULL; p = p->next) {
-            if (priorityq_in_q(pq, p->node_id) == 1) {
+            if (in_heap(pq, p->node_id) == 1) {
+#ifdef DEBUG
+                //printf("test\n");
+#endif
                 if (a->node[p->node_id].dist > a->node[new_node].dist + p->weight) {
                     a->node[p->node_id].dist = a->node[new_node].dist + p->weight;
                     a->node[p->node_id].pred = new_node;
-                    heapInsert(pq, a, p->node_id);
+                    heap_update(pq, p->node_id, a);
                 }
             }
         }
     }
+#ifdef DEBUG
+    //printf("count = %i\n", count);
+#endif
     heap_destroy(pq);
     return a;
 #endif
