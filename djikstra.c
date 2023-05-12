@@ -80,9 +80,7 @@ void heapify(struct Heap *minheap, int index, struct algm_data *a);
 
 struct Heap *heap_create(struct algm_data *a);
 
-void heapInsert(struct Heap *heap, struct algm_data *a, int data);
-
-void heapUpdater(struct Heap *h, int index);
+void heapUpdater(struct Heap *h, int index, struct algm_data *a);
 
 int heap_get(struct Heap *pq, struct algm_data *a);
 
@@ -218,14 +216,14 @@ void heap_destroy(struct Heap *h) {
     free(h);
 }
 
-void heapUpdater(struct Heap *h, int index) {
+void heapUpdater(struct Heap *h, int index, struct algm_data *a) {
     int parent = (index - 1) / 2;
 
-    if (h->arr[parent] > h->arr[index]) {
+    if (a->node[h->arr[parent]].dist > a->node[h->arr[index]].dist) {
         int temp = h->arr[parent];
         h->arr[parent] = h->arr[index];
         h->arr[index] = temp;
-        heapUpdater(h, parent);
+        heapUpdater(h, parent, a);
     }
 }
 
@@ -278,7 +276,13 @@ void heap_update(struct Heap *pq, int node, struct algm_data *a) {
     if(pq->size <= 0) {
         return;
     }
-    for(int i = pq->size; i >= 0; i--) {
+    for(int i = 0; i < pq->size; i++) {
+        if(pq->arr[i] == node) {
+            heapUpdater(pq, i, a);
+            return;
+        }
+    }
+    /*for(int i = pq->size; i >= 0; i--) {
         heapify(pq, i, a);
     }
     for(int i = 0; i <= pq->size; i++) {
@@ -286,7 +290,7 @@ void heap_update(struct Heap *pq, int node, struct algm_data *a) {
     }
     for(int i = pq->size; i >= 0; i--) {
         heapify(pq, i, a);
-    }
+    }*/
 }
 
 struct priorityq *priorityq_create(struct algm_data *a) {
